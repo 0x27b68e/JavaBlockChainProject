@@ -33,6 +33,9 @@ public class BlockChain {
 	Block  currentBlock;
 	Block previousBlock;
 	for (int i = 1; i < blockchain.size(); i++) {
+		if(i == 4) {
+			blockchain.get(i).setData("Spam data"); //sau block nay, blockchain is not valid
+		}
 		currentBlock = blockchain.get(i);
 		previousBlock = blockchain.get(i-1);
 		if(!currentBlock.getHash().equals(currentBlock.calculateHash())) { // nếu thay đổi hash ở Block nào đó, thì currentBlock.calculateHash() sẽ thay đổi và sẽ khác currentBlock.hash() đã lưu trong blockChain

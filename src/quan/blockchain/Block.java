@@ -10,11 +10,6 @@ public class Block {
 	private Long timeStamp;
 	private int nonce;
 	
-	/*public Block(String data, String previousBlock) {
-		this.timeStamp = new Date().getTime();
-		this.hash = calculateHash();
-		this.previousHash = previousBlock;
-	}*/
 	
 	public Block(String data, String previousHash) {
 		super();
