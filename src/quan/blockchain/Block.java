@@ -10,10 +10,11 @@ public class Block {
 	private Long timeStamp;
 	private int nonce;
 	
-	public Block() {
+	/*public Block(String data, String previousBlock) {
 		this.timeStamp = new Date().getTime();
 		this.hash = calculateHash();
-	}
+		this.previousHash = previousBlock;
+	}*/
 	
 	public Block(String data, String previousHash) {
 		super();
@@ -21,16 +22,9 @@ public class Block {
 		this.previousHash = previousHash;
 		this.timeStamp = new Date().getTime();
 		this.hash = calculateHash();
-	}
+	}	
 	
-	
-	
-	public String calculateHash() {
-		return SHA256Helper.sha256Helper(this.data + this.previousHash + Long.toString(this.timeStamp) + Integer.toString(nonce));
-	}
-	
-	
-	public String mineBlock(int difficulty) {
+	public void mineBlock(int difficulty) {
 		String target = "";
 		for (int i = 0; i < difficulty; i++) {
 			String c = "0";
@@ -41,9 +35,11 @@ public class Block {
 			this.hash = calculateHash();
 		}
 		System.out.println("found new block");
-		return this.hash;
 	}
 	
+	public String calculateHash() {
+		return SHA256Helper.sha256Helper(this.data + this.previousHash + Long.toString(this.timeStamp) + Integer.toString(nonce));
+	}
 	
 	public String getHash() {
 		return hash;
