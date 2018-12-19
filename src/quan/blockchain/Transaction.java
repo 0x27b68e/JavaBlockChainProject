@@ -47,5 +47,78 @@ public class Transaction {
 		return SHA256Helper.sha256CommonDecHelper(SHA256Helper.getStringFromKey(sender)
 				+ SHA256Helper.getStringFromKey(reciepient) + Float.toString(value) + sequence);
 	}
+	
+	// return true if new transactionwas created
+	public boolean processTransaction() {
+		if(checkSignature() == false) {
+			return false;
+		}
+		
+		//gather transaction inputs
+		if(transactionInput == null) {
+			return false;
+		} else {
+		for (TransactionInput i : transactionInput) {
+//			i.setUTXO(Main.UTXOs.get(i.transactionOutputId));
+			i.UTXO = Main.UTXOs.get(i.transactionOutputId);
+		}
+		}
+		// check if transaction is valid
+		if(getInputValue() < Main.minimunTransaction) {
+			System.out.println("Transaction input is small: " + getInputValue());
+		}
+		
+		//create transaction output
+		float leftOver = getInputValue() - value;
+		transactionId = calculator();
+		transactionOutput.add(new TransactionOutput(this.reciepient, value, transactionId)); //send value to the reciepient
+		transactionOutput.add(new TransactionOutput(this.sender, leftOver, transactionId)); //send the left over change
+		
+		// add output to the Unspent List
+		for (TransactionOutput o : transactionOutput) {
+			Main.UTXOs.put(o.getId(), o);
+		}
+		
+		// remove transaction input from UTXO was spent
+		for (TransactionInput i : transactionInput) {
+			if(i.UTXO == null) {
+				continue;
+			}
+			Main.UTXOs.remove(i.UTXO.getId());
+		}
+		return true;
+	}
+	
+	
+	// return sum of input(UTXO) value
+	public float getInputValue() {
+		float total = 0;
+		 for (TransactionInput i : transactionInput) {
+			if(i.UTXO == null) {
+				continue;
+			}
+			total += i.UTXO.getAmount();
+		}
+		return total;
+	}
+	
+	// return sum of output value
+	
+	public float getOutputValue() {
+		float total = 0;
+		for (TransactionOutput o : transactionOutput) {
+			total += o.getAmount();
+		}
+		return total;
+	}
+
+	public String getTransactionId() {
+		return transactionId;
+	}
+
+	public void setTransactionId(String transactionId) {
+		this.transactionId = transactionId;
+	}
 
 }
+ 

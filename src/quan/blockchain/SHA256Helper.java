@@ -9,12 +9,52 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.Signature;
 import java.security.SignatureException;
+import java.util.ArrayList;
 import java.util.Base64;
+import java.util.List;
 
 import org.apache.commons.codec.digest.DigestUtils;
 
 public class SHA256Helper {
 	
+	
+	public static String getMerkleRoot(List<Transaction> transactions) {
+		List<String> transactionIdList = new ArrayList<String>();
+		for (Transaction string : transactions) {
+			transactionIdList.add(string.transactionId);
+		}
+		
+		List<String> hashList = convertFromTransactionToHash(transactionIdList);
+		// đệ qui
+		while (hashList.size() != 1) {
+			hashList = convertFromTransactionToHash(hashList);
+		}
+		
+		return hashList.get(0); 
+	}
+	
+    private static List<String> convertFromTransactionToHash(List<String> listTransaction) {
+		
+		List<String> hashList = new ArrayList<String>();
+		int index = 0;
+		while (index < listTransaction.size()) {
+			//left
+			String left = listTransaction.get(index);
+			index++;
+			
+			// right
+			String right = listTransaction.get(index);
+			// sha hash value
+			String hash = sha256Helper(left + right);
+			hashList.add(hash);
+			index++;
+		}
+		
+		return hashList;
+		
+	}
+
+
 	public static String sha256Helper(String string) {
 		StringBuffer stringBuffer = new StringBuffer();
 		try {
@@ -81,5 +121,4 @@ public class SHA256Helper {
 	public static String getStringFromKey(Key key) {
 		return Base64.getEncoder().encodeToString(key.getEncoded());
 	}
-
 }

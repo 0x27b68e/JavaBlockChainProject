@@ -1,6 +1,8 @@
 package quan.blockchain;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 public class Block {
 	
@@ -10,6 +12,8 @@ public class Block {
 	private Long timeStamp;
 	private int nonce;
 	
+	private String merkleRoot;
+	public List<Transaction> transactions = new ArrayList<Transaction>();
 	
 	public Block(String data, String previousHash) {
 		super();
@@ -17,7 +21,22 @@ public class Block {
 		this.previousHash = previousHash;
 		this.timeStamp = new Date().getTime();
 		this.hash = calculateHash();
-	}	
+	}
+	
+	// add transaction to this Block
+	public boolean addTransaction(Transaction transaction) {
+		// check if Transaction is null or not, check if Generic block is ignore
+		if(transaction == null) return false;
+		if(this.previousHash != "0") 
+			if(transaction.processTransaction() != true) {
+				System.out.println("Process transaction fail!");
+				return false;
+			}
+		
+		transactions.add(transaction);
+		System.out.println("Transaction add ok!!");
+		return true;
+	}
 	
 	public void mineBlock(int difficulty) {
 		String target = "";
@@ -72,6 +91,14 @@ public class Block {
 	}
 
 
+
+	public String getMerkleRoot() {
+		return merkleRoot;
+	}
+
+	public void setMerkleRoot(String merkleRoot) {
+		this.merkleRoot = merkleRoot;
+	}
 
 	public String toString() {
 		return  "{ Hash of this block: " + this.hash + ",\n Previous hash: " + this.previousHash + ",\n Data: " + this.data + ", \n TimeStamp: " + this.timeStamp.toString()+"}";

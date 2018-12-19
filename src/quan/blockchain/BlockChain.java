@@ -10,7 +10,7 @@ public class BlockChain {
 	public static List<Block> blockchain = new ArrayList<Block>();
 	
 	public BlockChain() {
-		blockchain.add(new Block("This is first Block", "0"));
+//		blockchain.add(new Block("This is first Block", "0"));
 	}
 	
 	public void miningBlock(int difficulty) {

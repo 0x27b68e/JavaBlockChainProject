@@ -10,6 +10,11 @@ import java.security.PublicKey;
 import java.security.SecureRandom;
 import java.security.Security;
 import java.security.spec.ECGenParameterSpec;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
@@ -17,6 +22,10 @@ public class Wallet {
 	
 	public PrivateKey privateKey;
 	public PublicKey publicKey;
+	public static Map<String,TransactionOutput> UTXOs = new HashMap<String,TransactionOutput>(); // only UTXO own this wallet
+	
+	
+	
 	// Setup Bouncey castle as a Security Provider
 	static {
 	    Security.addProvider(new BouncyCastleProvider());
@@ -35,14 +44,61 @@ public class Wallet {
 			
 			KeyPair keyPair = keyGen.generateKeyPair();
 			//set the public and private keys from the keyPair;
-			publicKey = keyPair.getPublic();
-			privateKey = keyPair.getPrivate();
+			//publicKey = keyPair.getPublic();
+			//privateKey = keyPair.getPrivate();
+			setPublicKey(keyPair.getPublic());
+			setPrivateKey(keyPair.getPrivate());
+			
 		} catch (NoSuchAlgorithmException | NoSuchProviderException | InvalidAlgorithmParameterException  e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
-	/*public PrivateKey getPrivateKey() {
+	// return balance ans store the UTXO's owned by this wallet in this.UTXO
+	public float getBalance() {
+		float total = 0;
+		for (Map.Entry<String, TransactionOutput> item : Main.UTXOs.entrySet()) {
+			TransactionOutput UTXO = item.getValue();
+			if(UTXO.isYourCoin(publicKey)) {
+				UTXOs.put(UTXO.getId(), UTXO);
+				total += UTXO.getAmount();
+			}
+		}
+		return total;
+	}
+	
+	//Generate and return new transaction form this wallet
+	public Transaction sendFund(PublicKey recieve, float amout) {
+		if(getBalance() < amout) {
+			System.out.println( "Not enough fund to send transaction. Stop");
+			return null;
+		}
+		
+		
+		List<TransactionInput> inputs = new ArrayList<TransactionInput>();
+		float total = 0;
+		
+		for (Entry<String, TransactionOutput> item : UTXOs.entrySet()) {
+			TransactionOutput UTXO = item.getValue();
+			total += UTXO.getAmount();
+			inputs.add(new TransactionInput(UTXO.getId()));
+			if(total > amout) {
+				break;
+			}
+			
+		}
+		
+		Transaction newTransaction = new Transaction(this.getPublicKey(), recieve, amout, inputs);
+		newTransaction.generateSignature(getPrivateKey());
+		
+		for (TransactionInput item : inputs) {
+			inputs.remove(item.transactionOutputId);
+		}
+		return newTransaction;
+		
+	}
+	
+	
+	public PrivateKey getPrivateKey() {
 		return privateKey;
 	}
 	public void setPrivateKey(PrivateKey privateKey) {
@@ -53,6 +109,6 @@ public class Wallet {
 	}
 	public void setPublicKey(PublicKey publicKey) {
 		this.publicKey = publicKey;
-	}*/
+	}
 	
 }
