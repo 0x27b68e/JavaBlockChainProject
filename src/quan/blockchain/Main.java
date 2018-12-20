@@ -1,6 +1,5 @@
 package quan.blockchain;
 
-import java.awt.peer.SystemTrayPeer;
 import java.util.HashMap;
 import java.util.Scanner;
 
@@ -15,9 +14,6 @@ public class Main {
 	public static HashMap<String, Wallet> listWallet = new HashMap<>();
 	public static Scanner scanner = new Scanner(System.in);
 	public static void main(String[] args) {
-		
-		// Setup Bouncey castle as a Security Provider
-		//Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
 		
 		Wallet walletA = BlockChain.getWallet("walletA");
 		System.out.println("Wallet A balance: " + walletA.getBalance());
@@ -55,9 +51,6 @@ public class Main {
 						BlockChain.listTransaction.add(wallet.sendFund(walletRecieve.publicKey, value));
 						}
 					blockChain.miningBlock(difficulty);
-					Wallet wallet = BlockChain.getWallet("walletB");
-					System.out.println("walletB: " + wallet.getBalance());
-					System.out.println();
 		}
 	}			
 }
