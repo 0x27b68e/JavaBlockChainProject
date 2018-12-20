@@ -7,118 +7,104 @@ import java.util.List;
 
 public class Transaction {
 
-	public String transactionId;
-	public PublicKey sender;
-	public PublicKey reciepient;
-	public Float value;
+	public String transactionId; // this is a hash of this transaction
+	public PublicKey sender;     // sender address/ public key
+	public PublicKey reciepient; // reciepient address/public key
+	public Float value;			// amount of coins 
+	public byte[] signature;    // this is to prevent anyone else from spending funds from our wallet.
 
-	public byte[] signature;
+	public List<TransactionInput> inputs = new ArrayList<TransactionInput>();
+	public List<TransactionOutput> outputs = new ArrayList<TransactionOutput>();
 
-	List<TransactionInput> transactionInput = new ArrayList<TransactionInput>();
-	List<TransactionOutput> transactionOutput = new ArrayList<TransactionOutput>();
+	public static int sequence = 0; // count of how many transactions have been generated.
 
-	public static int sequence = 0;
-
-	public Transaction(PublicKey sender, PublicKey reciepient, Float value, List<TransactionInput> transactionInput) {
-		super();
-		this.sender = sender;
-		this.reciepient = reciepient;
-		this.value = value;
-		this.transactionInput = transactionInput;
+	public Transaction(PublicKey sender, PublicKey reciepient, Float value, List<TransactionInput> inputs) {
+			this.sender = sender;
+			this.reciepient = reciepient;
+			this.value = value;
+			this.inputs = inputs;
 	}
-
+	
+	// return true if new transaction was created
+		public boolean processTransaction() {
+			if(checkSignature() == false) {
+				System.out.println("#Transaction Signature failed to verify");
+				return false;
+			}
+			
+			//gather transaction inputs
+			for (TransactionInput i : inputs) {
+				i.UTXO = BlockChain.UTXOs.get(i.transactionOutputId);
+			}
+			// check if transaction is valid
+			if(getInputsValue() < Main.minimunTransaction) {
+				System.out.println("Transaction input is small: " + getInputsValue());
+				System.out.println("Please enter the amount greater than " + Main.minimunTransaction);
+				return false;
+			}
+			
+			//create transaction output
+			float leftOver = getInputsValue() - value;
+			transactionId = calculator();
+			outputs.add(new TransactionOutput(this.reciepient, value, transactionId)); //send value to the reciepient
+			outputs.add(new TransactionOutput(this.sender, leftOver, transactionId)); //send the left over change
+			
+			// add outputs to the Unspent List
+			for (TransactionOutput o : outputs) {
+				BlockChain.UTXOs.put(o.id, o);
+			}
+			
+			// remove transaction input from UTXO was spent
+			for (TransactionInput i : inputs) {
+				if(i.UTXO == null) {
+					continue;
+				}
+				BlockChain.UTXOs.remove(i.UTXO.id);
+			}
+			return true;
+		}
+		
+		// return sum of input(UTXO) value
+		public float getInputsValue() {
+			float total = 0;
+			 for (TransactionInput i : inputs) {
+				if(i.UTXO == null) {
+					continue;
+				}
+				total += i.UTXO.value;
+			}
+			return total;
+		}
+	
 	// create signature
 	public void generateSignature(PrivateKey privateKey) {
-		String data = SHA256Helper.getStringFromKey(sender) + SHA256Helper.getStringFromKey(reciepient)
-				+ Float.toString(value);
+		String data = SHA256Helper.getStringFromKey(sender) + SHA256Helper.getStringFromKey(reciepient) + Float.toString(value);
 		signature = SHA256Helper.applyECDSASig(privateKey, data);
 	}
 
 	// check signature
 	public boolean checkSignature() {
-		String data = SHA256Helper.getStringFromKey(sender) + SHA256Helper.getStringFromKey(reciepient)
-		+ Float.toString(value);
+		String data = SHA256Helper.getStringFromKey(sender) + SHA256Helper.getStringFromKey(reciepient) + Float.toString(value);
 		return SHA256Helper.verifyECDSASign(sender, data, signature);
 	}
 	
-	
-	private String calculator() {
-		sequence++;
-		return SHA256Helper.sha256CommonDecHelper(SHA256Helper.getStringFromKey(sender)
-				+ SHA256Helper.getStringFromKey(reciepient) + Float.toString(value) + sequence);
-	}
-	
-	// return true if new transactionwas created
-	public boolean processTransaction() {
-		if(checkSignature() == false) {
-			return false;
-		}
-		
-		//gather transaction inputs
-		if(transactionInput == null) {
-			return false;
-		} else {
-		for (TransactionInput i : transactionInput) {
-//			i.setUTXO(Main.UTXOs.get(i.transactionOutputId));
-			i.UTXO = Main.UTXOs.get(i.transactionOutputId);
-		}
-		}
-		// check if transaction is valid
-		if(getInputValue() < Main.minimunTransaction) {
-			System.out.println("Transaction input is small: " + getInputValue());
-		}
-		
-		//create transaction output
-		float leftOver = getInputValue() - value;
-		transactionId = calculator();
-		transactionOutput.add(new TransactionOutput(this.reciepient, value, transactionId)); //send value to the reciepient
-		transactionOutput.add(new TransactionOutput(this.sender, leftOver, transactionId)); //send the left over change
-		
-		// add output to the Unspent List
-		for (TransactionOutput o : transactionOutput) {
-			Main.UTXOs.put(o.getId(), o);
-		}
-		
-		// remove transaction input from UTXO was spent
-		for (TransactionInput i : transactionInput) {
-			if(i.UTXO == null) {
-				continue;
+	 public float getOutputValue() {
+			float total = 0;
+			for (TransactionOutput o : outputs) {
+				total += o.value;
 			}
-			Main.UTXOs.remove(i.UTXO.getId());
+			return total;
 		}
-		return true;
-	}
-	
-	
-	// return sum of input(UTXO) value
-	public float getInputValue() {
-		float total = 0;
-		 for (TransactionInput i : transactionInput) {
-			if(i.UTXO == null) {
-				continue;
-			}
-			total += i.UTXO.getAmount();
+	 
+	// create transaction hash, as ID of this transaction
+		private String calculator() {
+			sequence++;
+			return SHA256Helper.sha256Helper(
+					SHA256Helper.getStringFromKey(sender) + 
+					SHA256Helper.getStringFromKey(reciepient) + 
+					Float.toString(value) + sequence
+					);
 		}
-		return total;
-	}
-	
-	// return sum of output value
-	
-	public float getOutputValue() {
-		float total = 0;
-		for (TransactionOutput o : transactionOutput) {
-			total += o.getAmount();
-		}
-		return total;
-	}
-
-	public String getTransactionId() {
-		return transactionId;
-	}
-
-	public void setTransactionId(String transactionId) {
-		this.transactionId = transactionId;
-	}
-
+		
 }
  
