@@ -64,8 +64,6 @@ public class BlockChain {
 		return wallet;
 	}
 	
-	
-	
 	public void miningBlock(int difficulty) {
 		Block block = new Block(lastBlock().hash);
 		if(listTransaction.size() == 0) {
@@ -73,12 +71,14 @@ public class BlockChain {
 		blockchain.add(block);
 		System.out.println("found Block " + (blockchain.size() - 1) + " Hash: " + block.hash);	 
 		} else {
+			
 			for (Transaction transaction : listTransaction) {
-				block.addTransaction(transaction);	
+				block.addTransaction(transaction);
 			}
 			block.mineBlock(difficulty);
 			blockchain.add(block);
 		}
+		listTransaction.clear();;
 	}
 
 	//get last Block

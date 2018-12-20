@@ -1,5 +1,6 @@
 package quan.blockchain;
 
+import java.awt.peer.SystemTrayPeer;
 import java.util.HashMap;
 import java.util.Scanner;
 
@@ -12,7 +13,7 @@ public class Main {
 	
 	public static BlockChain blockChain = new BlockChain();
 	public static HashMap<String, Wallet> listWallet = new HashMap<>();
-	
+	public static Scanner scanner = new Scanner(System.in);
 	public static void main(String[] args) {
 		
 		// Setup Bouncey castle as a Security Provider
@@ -34,11 +35,32 @@ public class Main {
 		System.out.println("Balance WalletA: " + walletA.getBalance());
 		System.out.println("Balance WalletB: " + walletB.getBalance());
 		
-		Scanner scanner = new Scanner(System.in);
-		System.out.println("Enter wallet Name:");
-		String walletName = scanner.nextLine();
 		
-		boolean checkWalletName = WalletUtils.getWallet(walletName, BlockChain.walletList);
+		System.out.println("Start mining!!");
+		while (true) {
+						System.out.println("do you want to transact, y/n");
+						String choise = scanner.nextLine();
+					
+						if(choise.equals("y")) {
+						System.out.println("what name of your wallet! ");
+						String walletName = scanner.nextLine();
+						Wallet wallet = BlockChain.getWallet(walletName);
+
+						System.out.println("wallet name you want to send to ");
+						String reciepient = scanner.nextLine();
+						Wallet walletRecieve = BlockChain.getWallet(reciepient);
+
+						System.out.println("How many coins do you want to send :");
+						float value = scanner.nextFloat();
+						BlockChain.listTransaction.add(wallet.sendFund(walletRecieve.publicKey, value));
+						}
+					blockChain.miningBlock(difficulty);
+					Wallet wallet = BlockChain.getWallet("walletB");
+					System.out.println("walletB: " + wallet.getBalance());
+					System.out.println();
+		}
+	}
+		/*
 		if(!checkWalletName) {
 			System.out.println("Do you want to create new wallet: ");
 			String string  = scanner.nextLine();
@@ -50,12 +72,8 @@ public class Main {
 		} else  {
 			Wallet wallet = BlockChain.getWallet(walletName);
 			WalletUtils.commandWallet(wallet);
-		}
-		
-		System.out.println("Start mining!!");
-		/*while (true) {
-			blockChain.miningBlock(difficulty);
 		}*/
+		
 		
 
 		/*System.out.println("\nWalletA is Attempting to send funds (40) to WalletB...");
@@ -95,5 +113,4 @@ public class Main {
 			System.out.println(json);
 			System.out.println("Chain valid ?" + blockchain.isChainValid());
 		}*/
-	}
 }

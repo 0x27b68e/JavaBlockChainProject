@@ -37,11 +37,11 @@ public class Transaction {
 				i.UTXO = BlockChain.UTXOs.get(i.transactionOutputId);
 			}
 			// check if transaction is valid
-			if(getInputsValue() < Main.minimunTransaction) {
+			/*if(getInputsValue() < Main.minimunTransaction) {
 				System.out.println("Transaction input is small: " + getInputsValue());
 				System.out.println("Please enter the amount greater than " + Main.minimunTransaction);
 				return false;
-			}
+			}*/
 			
 			//create transaction output
 			float leftOver = getInputsValue() - value;
