@@ -1,17 +1,13 @@
 package quan.blockchain;
 
-import java.util.HashMap;
 import java.util.Scanner;
 
 public class Main {
 
 	public static int difficulty = 5;
-	public static Wallet walletA;
-	public static Wallet walletB;
 	public static float minimunTransaction = 0.1f;
 	
 	public static BlockChain blockChain = new BlockChain();
-	public static HashMap<String, Wallet> listWallet = new HashMap<>();
 	public static Scanner scanner = new Scanner(System.in);
 	public static void main(String[] args) {
 		
