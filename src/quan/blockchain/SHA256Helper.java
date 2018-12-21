@@ -7,6 +7,8 @@ import java.security.PublicKey;
 import java.security.Signature;
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.List;
+
 import com.google.gson.GsonBuilder;
 
 public class SHA256Helper {
@@ -110,9 +112,9 @@ public class SHA256Helper {
 			hashList = convertFromTransactionToHash(hashList);
 		}
 		return hashList.get(0); 
-	}*/
+	}
 	
-   /* private static List<String> convertFromTransactionToHash(List<String> listTransaction) {
+    private static List<String> convertFromTransactionToHash(List<String> listTransaction) {
 		
 		List<String> hashList = new ArrayList<String>();
 		int index = 0;
